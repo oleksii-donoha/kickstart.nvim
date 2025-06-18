@@ -976,6 +976,14 @@ require('lazy').setup({
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
     { 'nvim-treesitter/nvim-treesitter-context' },
+    {
+      'voldikss/vim-floaterm',
+      config = function()
+        vim.api.nvim_create_user_command('Git', 'FloatermNew lazygit', {
+          desc = 'Lazygit in a floating window',
+        })
+      end,
+    },
   },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
