@@ -168,10 +168,10 @@ vim.o.scrolloff = 10
 vim.o.confirm = true
 
 local abbreviations = {
-  jqfmt = '%!jq',
+  iferr = 'if err != nil {}',
 }
 for l, r in pairs(abbreviations) do
-  vim.cmd('cnorea ' .. l .. ' ' .. r)
+  vim.cmd('inorea ' .. l .. ' ' .. r)
 end
 
 -- [[ Basic Keymaps ]]
@@ -992,7 +992,7 @@ require('lazy').setup({
   require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
