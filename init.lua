@@ -976,14 +976,11 @@ require('lazy').setup({
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
     { 'nvim-treesitter/nvim-treesitter-context' },
-    {
-      'voldikss/vim-floaterm',
-      config = function()
-        vim.api.nvim_create_user_command('Git', 'FloatermNew lazygit', {
-          desc = 'Lazygit in a floating window',
-        })
-      end,
-    },
+    -- {
+    --   'voldikss/vim-floaterm',
+    --   config = function() end,
+    -- },
+    { 'akinsho/toggleterm.nvim', version = '*', config = true },
   },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
@@ -1032,6 +1029,15 @@ require('lazy').setup({
       lazy = '💤 ',
     },
   },
+})
+local Terminal = require('toggleterm.terminal').Terminal
+local lazygit = Terminal:new { cmd = 'lazygit', hidden = true, direction = 'float', float_opts = { border = 'double' } }
+
+function _lazygit_toggle()
+  lazygit:toggle()
+end
+vim.api.nvim_create_user_command('Git', 'lua _lazygit_toggle()', {
+  desc = 'Lazygit in a floating window',
 })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
