@@ -690,6 +690,7 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         ts_ls = {},
+        terraformls = {},
         --
 
         lua_ls = {
@@ -998,6 +999,79 @@ require('lazy').setup({
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  {
+    'folke/edgy.nvim',
+    event = 'VeryLazy',
+    init = function()
+      vim.opt.laststatus = 3
+      vim.opt.splitkeep = 'screen'
+    end,
+    opts = {
+      bottom = {
+        {
+          ft = 'toggleterm',
+          size = { height = 0.4 },
+          -- exclude floating windows
+          filter = function(buf, win)
+            return vim.api.nvim_win_get_config(win).relative == ''
+          end,
+        },
+      },
+      {
+        title = 'Neo-Tree',
+        ft = 'neo-tree',
+        filter = function(buf)
+          return vim.b[buf].neo_tree_source == 'filesystem'
+        end,
+        size = { height = 0.5 },
+      },
+      {
+        title = 'Neo-Tree Git',
+        ft = 'neo-tree',
+        filter = function(buf)
+          return vim.b[buf].neo_tree_source == 'git_status'
+        end,
+        pinned = true,
+        collapsed = true, -- show window as closed/collapsed on start
+        open = 'Neotree position=right git_status',
+      },
+      {
+        title = 'Neo-Tree Buffers',
+        ft = 'neo-tree',
+        filter = function(buf)
+          return vim.b[buf].neo_tree_source == 'buffers'
+        end,
+        pinned = true,
+        collapsed = false, -- show window as closed/collapsed on start
+        open = 'Neotree position=top buffers',
+      },
+      {
+        title = function()
+          local buf_name = vim.api.nvim_buf_get_name(0) or '[No Name]'
+          return vim.fn.fnamemodify(buf_name, ':t')
+        end,
+        ft = 'Outline',
+        pinned = true,
+        open = 'SymbolsOutlineOpen',
+      },
+    },
+  },
+  {
+    'kevinhwang91/nvim-ufo',
+    dependencies = { 'kevinhwang91/promise-async' },
+    config = function()
+      vim.o.foldcolumn = '1' -- '0' is not bad
+      vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+      vim.o.foldlevelstart = 99
+      vim.o.foldenable = true
+      require('ufo').setup {
+        provider_selector = function(bufnr, filetype, buftype)
+          return { 'treesitter', 'indent' }
+        end,
+      }
+    end,
+  },
+  { 'github/copilot.vim' },
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
