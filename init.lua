@@ -452,12 +452,29 @@ require('lazy').setup({
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
+      function vim.find_files_from_project_git_root()
+        local function is_git_repo()
+          vim.fn.system 'git rev-parse --is-inside-work-tree'
+          return vim.v.shell_error == 0
+        end
+        local function get_git_root()
+          local dot_git_path = vim.fn.finddir('.git', '.;')
+          return vim.fn.fnamemodify(dot_git_path, ':h')
+        end
+        local opts = {}
+        if is_git_repo() then
+          opts = {
+            cwd = get_git_root(),
+          }
+        end
+        require('telescope.builtin').find_files(opts)
+      end
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>sf', vim.find_files_from_project_git_root, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -712,7 +729,7 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         ts_ls = {},
         terraformls = {},
-        --
+        bashls = {},
 
         lua_ls = {
           -- cmd = { ... },
@@ -1113,6 +1130,20 @@ require('lazy').setup({
     end,
   },
   { 'github/copilot.vim' },
+  {
+    'tveskag/nvim-blame-line',
+    config = function()
+      -- This plugin shows the last commit that modified the current line.
+      -- It is useful to see who wrote a particular line of code.
+      -- You can use <leader>bl to toggle the blame line.
+      vim.api.nvim_create_autocmd('BufEnter', {
+        desc = 'Enable blame line on buffer enter',
+        callback = function()
+          vim.cmd 'EnableBlameLine'
+        end,
+      })
+    end,
+  },
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
