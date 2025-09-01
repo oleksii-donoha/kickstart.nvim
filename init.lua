@@ -116,7 +116,7 @@ vim.o.showmode = false
 --  See `:help 'clipboard'`
 vim.schedule(function()
   vim.o.clipboard = 'unnamedplus'
-  vim.g.clipboard = 'xclip'
+  vim.g.clipboard = 'wl-copy'
 end)
 
 -- Enable break indent
@@ -719,7 +719,7 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         gopls = {},
-        -- pyright = {},
+        pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -996,7 +996,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'yaml' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -1019,7 +1019,13 @@ require('lazy').setup({
     --   'voldikss/vim-floaterm',
     --   config = function() end,
     -- },
-    { 'akinsho/toggleterm.nvim', version = '*', config = true },
+    {
+      'akinsho/toggleterm.nvim',
+      version = '*',
+      config = function()
+        vim.keymap.set('n', '<leader>tt', require('toggleterm').toggle, { desc = 'Toggle [T]erminal' })
+      end,
+    },
   },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
@@ -1144,6 +1150,27 @@ require('lazy').setup({
       })
     end,
   },
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      -- Lualine is a statusline plugin that provides a customizable statusline.
+      -- It is used to show information about the current buffer, such as the file name,
+      -- file type, and git branch.
+      require('lualine').setup {
+        options = {
+          icons_enabled = vim.g.have_nerd_font,
+          theme = 'tokyonight',
+          component_separators = { left = '', right = '' },
+          section_separators = { left = '', right = '' },
+        },
+      }
+    end,
+  },
+  { 'sebdah/vim-delve' },
+  { 'cappyzawa/trim.nvim', opts = {} },
+
+  -- Plugins HIER
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
