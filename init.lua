@@ -730,6 +730,7 @@ require('lazy').setup({
         ts_ls = {},
         terraformls = {},
         bashls = {},
+        nil_ls = {},
 
         lua_ls = {
           -- cmd = { ... },
@@ -1169,6 +1170,10 @@ require('lazy').setup({
   },
   { 'sebdah/vim-delve' },
   { 'cappyzawa/trim.nvim', opts = {} },
+  { 'mfussenegger/nvim-dap' },
+  { 'rcarriga/nvim-dap-ui', dependencies = { 'nvim-dap', 'nvim-neotest/nvim-nio' }, opts = {} },
+  { 'theHamsta/nvim-dap-virtual-text', dependencies = { 'nvim-dap' }, opts = {} },
+  { 'leoluz/nvim-dap-go', dependencies = { 'nvim-dap' }, opts = {} },
 
   -- Plugins HIER
 
@@ -1212,6 +1217,8 @@ end
 vim.api.nvim_create_user_command('Git', 'lua _lazygit_toggle()', {
   desc = 'Lazygit in a floating window',
 })
+
+require 'mydap'
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
