@@ -227,6 +227,13 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+vim.filetype.add {
+  extension = {
+    tm = 'terramate',
+    ['tm.hcl'] = 'terramate',
+  },
+}
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -241,6 +248,9 @@ end
 ---@type vim.Option
 local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
+
+vim.opt.title = true
+vim.opt.titlestring = '[💅🏼nvim] ' .. vim.fn.getcwd()
 
 -- [[ Configure and install plugins ]]
 --
@@ -530,7 +540,29 @@ require('lazy').setup({
       -- NOTE: `opts = {}` is the same as calling `require('mason').setup({})`
       { 'mason-org/mason.nvim', opts = {} },
       'mason-org/mason-lspconfig.nvim',
-      'WhoIsSethDaniel/mason-tool-installer.nvim',
+      {
+        'WhoIsSethDaniel/mason-tool-installer.nvim',
+        opts = {
+          ensure_installed = {
+            'gopls',
+            'lua_ls',
+            'basedpyright',
+            'ts_ls',
+            -- 'terraformls',
+            'bashls',
+            'nil_ls',
+            'debugpy',
+            'ruff',
+          },
+          auto_update = true,
+          run_on_start = true,
+          start_delay = 3000, -- 3 second delay
+          integrations = {
+            ['mason-lspconfig'] = true,
+            ['mason-nvim-dap'] = true,
+          },
+        },
+      },
 
       -- Useful status updates for LSP.
       { 'j-hui/fidget.nvim', opts = {} },
@@ -719,7 +751,9 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         gopls = {},
-        pyright = {},
+        typos_lsp = {},
+        -- pyright = {},
+        basedpyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -728,7 +762,7 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         ts_ls = {},
-        terraformls = {},
+        -- terraformls = {},
         bashls = {},
         nil_ls = {},
 
@@ -748,25 +782,6 @@ require('lazy').setup({
         },
       }
 
-      -- Ensure the servers and tools above are installed
-      --
-      -- To check the current status of installed tools and/or manually install
-      -- other tools, you can run
-      --    :Mason
-      --
-      -- You can press `g?` for help in this menu.
-      --
-      -- `mason` had to be setup earlier: to configure its options see the
-      -- `dependencies` table for `nvim-lspconfig` above.
-      --
-      -- You can add other tools here that you want Mason to install
-      -- for you, so that they are available from within Neovim.
-      local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, {
-        'stylua', -- Used to format Lua code
-      })
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
-
       require('mason-lspconfig').setup {
         ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
         automatic_installation = false,
@@ -781,6 +796,10 @@ require('lazy').setup({
           end,
         },
       }
+
+      -- require('mason-nvim-dap').setup {
+      --   ensure_installed = { 'python', 'delve' },
+      -- }
     end,
   },
 
@@ -1174,9 +1193,53 @@ require('lazy').setup({
   { 'rcarriga/nvim-dap-ui', dependencies = { 'nvim-dap', 'nvim-neotest/nvim-nio' }, opts = {} },
   { 'theHamsta/nvim-dap-virtual-text', dependencies = { 'nvim-dap' }, opts = {} },
   { 'leoluz/nvim-dap-go', dependencies = { 'nvim-dap' }, opts = {} },
-
+  {
+    'mfussenegger/nvim-dap-python',
+    dependencies = { 'mfussenegger/nvim-dap', 'nvim-neotest/nvim-nio' },
+    config = function()
+      local mason_path = vim.fn.glob(vim.fn.stdpath 'data' .. '/mason/')
+      require('dap-python').setup(mason_path .. 'packages/debugpy/venv/bin/python')
+    end,
+  },
+  -- {
+  --   '3rd/image.nvim',
+  --   build = false, -- so that it doesn't build the rock https://github.com/3rd/image.nvim/issues/91#issuecomment-2453430239
+  --   opts = {
+  --     processor = 'magick_cli',
+  --   },
+  -- },
   -- Plugins HIER
-
+  {
+    'benomahony/uv.nvim',
+    -- Optional filetype to lazy load when you open a python file
+    ft = 'python',
+    -- Optional dependency, but recommended:
+    -- dependencies = {
+    --   "folke/snacks.nvim"
+    -- or
+    --   "nvim-telescope/telescope.nvim"
+    -- },
+    opts = {
+      picker_integration = true,
+      auto_activate_venv = true,
+      notify_activate_venv = true,
+    },
+  },
+  -- {
+  --   'linux-cultist/venv-selector.nvim',
+  --   dependencies = {
+  --     'neovim/nvim-lspconfig',
+  --     { 'nvim-telescope/telescope.nvim', branch = '0.1.x', dependencies = { 'nvim-lua/plenary.nvim' } }, -- optional: you can also use fzf-lua, snacks, mini-pick instead.
+  --   },
+  --   ft = 'python', -- Load when opening Python files
+  --   keys = {
+  --     { '<leader>vv', '<cmd>VenvSelect<cr>' }, -- Open picker on keymap
+  --   },
+  --   opts = { -- this can be an empty lua table - just showing below for clarity.
+  --     search = {}, -- if you add your own searches, they go here.
+  --     options = {}, -- if you add plugin options, they go here.
+  --   },
+  -- },
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --

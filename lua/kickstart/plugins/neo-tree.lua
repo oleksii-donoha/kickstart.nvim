@@ -14,6 +14,11 @@ return {
     { '\\', ':Neotree reveal<CR>', desc = 'NeoTree reveal', silent = true },
   },
   opts = {
+    update_focused_file = {
+      enable = true,
+      update_cwd = false,
+      ignore_list = {},
+    },
     filesystem = {
       filtered_items = {
         visible = true,
