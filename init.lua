@@ -446,11 +446,9 @@ require('lazy').setup({
           return vim.fn.fnamemodify(dot_git_path, ':h')
         end
         local opts = {}
-        if is_git_repo() then
-          opts = {
-            cwd = get_git_root(),
-          }
-        end
+        if is_git_repo() then opts = {
+          cwd = get_git_root(),
+        } end
         require('telescope.builtin').find_files(opts)
       end
 
@@ -659,9 +657,24 @@ require('lazy').setup({
           --
           -- This may be unwanted, since they displace some of your code
           if client and client:supports_method('textDocument/inlayHint', event.buf) then
-            map('<leader>th', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf }) end, '[T]oggle Inlay [H]ints')
+            vim.lsp.inlay_hint.enable(true)
+            vim.keymap.set('n', '<leader>th', function()
+              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+            end, { desc = 'LSP: [T]oggle Inlay [H]ints' })
           end
         end,
+      })
+      vim.api.nvim_create_autocmd('LspAttach', {
+        group = vim.api.nvim_create_augroup('lsp_attach_disable_ruff_hover', { clear = true }),
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client == nil then return end
+          if client.name == 'ruff' then
+            -- Disable hover in favor of Pyright
+            client.server_capabilities.hoverProvider = false
+          end
+        end,
+        desc = 'LSP: Disable hover capability from Ruff',
       })
 
       -- LSP servers and clients are able to communicate to each other what features they support.
@@ -689,6 +702,7 @@ require('lazy').setup({
         -- terraformls = {},
         bashls = {},
         nil_ls = {},
+        ruff = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -942,15 +956,18 @@ require('lazy').setup({
 
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    build = ':TSUpdate',
     config = function()
-      local filetypes = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
-      require('nvim-treesitter').install(filetypes)
-      vim.api.nvim_create_autocmd('FileType', {
-        pattern = filetypes,
-        callback = function() vim.treesitter.start() end,
-      })
+      require('nvim-treesitter.configs').setup {
+        ensure_installed = {
+          'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc',
+          'go', 'python', 'typescript', 'javascript', 'json', 'yaml', 'toml', 'nix',
+        },
+        auto_install = true,
+        highlight = { enable = true },
+      }
     end,
-    { 'nvim-treesitter/nvim-treesitter-context' },
+    { 'nvim-treesitter/nvim-treesitter-context', opts = {} },
     -- {
     --   'voldikss/vim-floaterm',
     --   config = function() end,
@@ -958,9 +975,7 @@ require('lazy').setup({
     {
       'akinsho/toggleterm.nvim',
       version = '*',
-      config = function()
-        vim.keymap.set('n', '<leader>tt', require('toggleterm').toggle, { desc = 'Toggle [T]erminal' })
-      end,
+      config = function() vim.keymap.set('n', '<leader>tt', require('toggleterm').toggle, { desc = 'Toggle [T]erminal' }) end,
     },
   },
 
@@ -992,25 +1007,19 @@ require('lazy').setup({
           ft = 'toggleterm',
           size = { height = 0.4 },
           -- exclude floating windows
-          filter = function(buf, win)
-            return vim.api.nvim_win_get_config(win).relative == ''
-          end,
+          filter = function(buf, win) return vim.api.nvim_win_get_config(win).relative == '' end,
         },
       },
       {
         title = 'Neo-Tree',
         ft = 'neo-tree',
-        filter = function(buf)
-          return vim.b[buf].neo_tree_source == 'filesystem'
-        end,
+        filter = function(buf) return vim.b[buf].neo_tree_source == 'filesystem' end,
         size = { height = 0.5 },
       },
       {
         title = 'Neo-Tree Git',
         ft = 'neo-tree',
-        filter = function(buf)
-          return vim.b[buf].neo_tree_source == 'git_status'
-        end,
+        filter = function(buf) return vim.b[buf].neo_tree_source == 'git_status' end,
         pinned = true,
         collapsed = true, -- show window as closed/collapsed on start
         open = 'Neotree position=right git_status',
@@ -1018,9 +1027,7 @@ require('lazy').setup({
       {
         title = 'Neo-Tree Buffers',
         ft = 'neo-tree',
-        filter = function(buf)
-          return vim.b[buf].neo_tree_source == 'buffers'
-        end,
+        filter = function(buf) return vim.b[buf].neo_tree_source == 'buffers' end,
         pinned = true,
         collapsed = false, -- show window as closed/collapsed on start
         open = 'Neotree position=top buffers',
@@ -1045,9 +1052,7 @@ require('lazy').setup({
       vim.o.foldlevelstart = 99
       vim.o.foldenable = true
       require('ufo').setup {
-        provider_selector = function(bufnr, filetype, buftype)
-          return { 'treesitter', 'indent' }
-        end,
+        provider_selector = function(bufnr, filetype, buftype) return { 'treesitter', 'indent' } end,
       }
     end,
   },
@@ -1080,9 +1085,7 @@ require('lazy').setup({
       -- You can use <leader>bl to toggle the blame line.
       vim.api.nvim_create_autocmd('BufEnter', {
         desc = 'Enable blame line on buffer enter',
-        callback = function()
-          vim.cmd 'EnableBlameLine'
-        end,
+        callback = function() vim.cmd 'EnableBlameLine' end,
       })
     end,
   },
@@ -1190,9 +1193,7 @@ require('lazy').setup({
 local Terminal = require('toggleterm.terminal').Terminal
 local lazygit = Terminal:new { cmd = 'lazygit', hidden = true, direction = 'float', float_opts = { border = 'double' } }
 
-function _lazygit_toggle()
-  lazygit:toggle()
-end
+function _lazygit_toggle() lazygit:toggle() end
 vim.api.nvim_create_user_command('Git', 'lua _lazygit_toggle()', {
   desc = 'Lazygit in a floating window',
 })
