@@ -546,7 +546,7 @@ require('lazy').setup({
             'lua_ls',
             'basedpyright',
             'ts_ls',
-            -- 'terraformls',
+            'terraformls',
             'bashls',
             'nil_ls',
             'debugpy',
@@ -658,9 +658,12 @@ require('lazy').setup({
           -- This may be unwanted, since they displace some of your code
           if client and client:supports_method('textDocument/inlayHint', event.buf) then
             vim.lsp.inlay_hint.enable(true)
-            vim.keymap.set('n', '<leader>th', function()
-              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-            end, { desc = 'LSP: [T]oggle Inlay [H]ints' })
+            vim.keymap.set(
+              'n',
+              '<leader>th',
+              function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end,
+              { desc = 'LSP: [T]oggle Inlay [H]ints' }
+            )
           end
         end,
       })
@@ -699,7 +702,9 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         ts_ls = {},
-        -- terraformls = {},
+        terraformls = {
+          cmd = { 'terraform-ls', 'serve' },
+        },
         bashls = {},
         nil_ls = {},
         ruff = {},
@@ -960,8 +965,25 @@ require('lazy').setup({
     config = function()
       require('nvim-treesitter.configs').setup {
         ensure_installed = {
-          'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc',
-          'go', 'python', 'typescript', 'javascript', 'json', 'yaml', 'toml', 'nix',
+          'bash',
+          'c',
+          'diff',
+          'html',
+          'lua',
+          'luadoc',
+          'markdown',
+          'markdown_inline',
+          'query',
+          'vim',
+          'vimdoc',
+          'go',
+          'python',
+          'typescript',
+          'javascript',
+          'json',
+          'yaml',
+          'toml',
+          'nix',
         },
         auto_install = true,
         highlight = { enable = true },
