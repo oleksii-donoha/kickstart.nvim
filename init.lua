@@ -554,6 +554,7 @@ require('lazy').setup({
             'gopls',
             'lua_ls',
             'basedpyright',
+            'glsl_analyzer',
             'ts_ls',
             'terraformls',
             'bashls',
@@ -696,6 +697,7 @@ require('lazy').setup({
         typos_lsp = {},
         -- pyright = {},
         basedpyright = {},
+        ols = {},
         -- rust_analyzer = {},
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -745,6 +747,7 @@ require('lazy').setup({
             },
           },
         },
+        glsl_analyzer = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -783,7 +786,7 @@ require('lazy').setup({
     ---@module 'conform'
     ---@type conform.setupOpts
     opts = {
-      notify_on_error = true,
+      notify_on_error = false,
       -- log_level = vim.log.levels.DEBUG,
       format_on_save = function(bufnr)
         -- You can specify filetypes to autoformat on save here:
@@ -801,6 +804,13 @@ require('lazy').setup({
         lsp_format = 'fallback', -- Use external formatters if configured below, otherwise use LSP formatting. Set to `false` to disable LSP formatting entirely.
       },
       -- You can also specify external formatters in here.
+      formatters = {
+        odinfmt = {
+          command = 'odinfmt',
+          args = { '--stdin' },
+          stdin = true,
+        },
+      },
       formatters_by_ft = {
         -- rust = { 'rustfmt' },
         -- Conform can also run multiple formatters sequentially
@@ -812,6 +822,7 @@ require('lazy').setup({
         jsonc = { 'prettierd' },
         json = { 'prettierd' },
         typescript = { 'prettierd' },
+        odin = { 'odinfmt' },
       },
     },
   },
